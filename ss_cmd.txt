@@ -1,0 +1,522 @@
+50fps libx264a测试10bit 50帧
+ffmpeg.exe  -stats -f decklink -bm_v210 1 -i "DeckLink 4K Pro@25"  -b:v 5000000 -vcodec libx264a -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15 -pix_fmt yuv422p10  -g 25   -preset superfast  -tune zerolatency  -c:a ac3 -b:a 128000  -f mpegts -muxrate 10000000 -muxdelay 2000 -y udp://127.0.0.1:9008?buffer_size=100000000&pkt_size=1316
+说明：
+-bm_v210:10   bit采集
+-vcodec libx264a  自己的测试codec，目前通过它来验证 10bit采集的性能。
+-width_enc 960 -height_enc 540  由于目前10bit h264编码性能不够，暂时采用了一次下采样的方式模拟（下采样是在完全模拟完采集格式的转换）
+-ethread 1   指定x264的编码调用使用异步方式（线程里使用）
+-ylist 15    指定yuv格式转换的队列大小。
+-pix_fmt yuv422p10  指定x264编码使用yuv422的p10编码，目的是让ffmpeg不在主线程中做yuv422p10-->yuv420p10的转换，然后再编码接口里面用一个线程专门做这个转换，使用uyvy2yuv参数
+ -uyvy2yuv 1
+ 
+ //写yuv文件
+FILE* f = fopen("F:\\bin64\\testseq\\scene2.yuv", "ab");
+		if (f)
+		{
+			int framesize = width * height *3/2;
+			
+			fwrite(buf, framesize, 1, f);
+
+			fclose(f);
+		}
+
+
+//涛
+ffmpeg.exe -stats  -f decklink -i "DeckLink 4K Pro@24"  -b:v 20000000 -vcodec libx264  -threads 80  -g 25   -preset superfast  -tune zerolatency  -an  -f mpegts -muxrate 28000000 -muxrate2 28000000 -muxdelay 2000 -muxdelay2 2000 -pkt_size 1316  -sending 1 -smoothsend 1 -y asi://192.168.3.67:9008 
+
+?buffer_size=100000000
+
+//合并
+ffmpeg.exe  -stats -f decklink -bm_v210 1 -i "DeckLink 4K Pro@25"  -b:v 5000000 -vcodec libx264a -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15 -pix_fmt yuv422p10  -g 25   -preset fast  -tune zerolatency  -c:a ac3 -b:a 128000  -f mpegts -muxrate 6000000 -muxrate2 6000000 -muxdelay 2000 -muxdelay2 2000 -pkt_size 1316  -sending 1 -smoothsend 1 -y asi://192.168.3.67:9018?buffer_size=100000000
+
+//网页org
+ffmpeg.exe  -stats  -f decklink -bm_v210 1 -i "DeckLink 4K Pro@25" -delayres 240 -s 3840x2160 -pix_fmt yuv420p10  -c:v libx264   -usefast 1 -globalsendbufnum 300  -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts -muxrate 35000000 -muxdelay 2000 -metadata service_provider="tre23" -mpegts_service_id 423 -mpegts_start_pid 124 -metadata service_name="qwe1" -mpegts_pmt_start_pid 123 -muxrate2 35000000 -muxdelay2 1000 -pkt_size 1316  -sending 1 -smoothsend 1 -y asi://192.168.3.67:9018?buffer_size=100000000
+
+//网页合并
+ffmpeg.exe  -stats  -f decklink -bm_v210 1 -i "DeckLink 4K Pro@25" -delayres 240 -s 3840x2160 -vcodec libx264a  -usefast 1 -globalsendbufnum 300  -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15  -pix_fmt yuv422p10 -g 25   -preset fast  -tune zerolatency   -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts  -muxrate 35000000 -muxdelay 2000 -metadata service_provider="tre23" -mpegts_service_id 423  -metadata service_name="qwe1" -muxrate2 35000000 -muxdelay2 1000 -pkt_size 1316  -sending 0 -smoothsend 1 -y asi://192.168.3.67:9018?buffer_size=100000000
+
+//有问题项
+-mpegts_start_pid 124  
+ -mpegts_pmt_start_pid 123  
+ 
+ 
+ //0825 new
+ ffmpeg.exe -stats  -f decklink2 -bm_v210 1 -i "DeckLink 4K Pro@25" -s 3840x2160 -vcodec libgavs2a -uyvy2yuv 1 -output_avs 1 -width_enc 352 -height_enc 288 -ylist 15  -b:v 1000000 -pix_fmt yuv420p10 -g 25  -ethread 1 -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts  -muxrate 35000000 -muxdelay 2000 -metadata service_provider="tre23" -mpegts_service_id 423  -metadata service_name="qwe1" -muxrate2 35000000 -muxdelay2 1000 -pkt_size 1316  -sending 1 -smoothsend 1 -y asi://192.168.3.67:9018?buffer_size=100000000
+ 
+ //0828
+ ffmpeg.exe  -stats  -f decklink -bm_v210 1 -i "DeckLink 4K Pro@24" -delayres 200 -s 3840x2160 -b:v 5000000 -pix_fmt yuv422p10  -c:v libx264a   -usefast 1 -globalsendbufnum 300 -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15  -g 25 -preset fast -tune zerolatency    -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts -muxrate 6000000 -muxdelay 2000 -metadata service_provider="tre23" -mpegts_service_id 423 -metadata service_name="qwe1"  -muxrate2 6000000 -muxdelay2 1000 -pkt_size 1316  -sending 1 -smoothsend 0  -asisending 0 -y udp://192.168.3.67:9028?buffer_size=100000000
+ 
+ //0920
+ ffmpeg.exe  -stats  -f decklink -bm_v210 1 -i "DeckLink 4K Pro@24" -delayres 200 -s 3840x2160 -b:v 5000000 -pix_fmt yuv422p10  -c:v libx264a   -usefast 1 -globalsendbufnum 300 -uyvy2yuv 1 -width_enc 352 -height_enc 288 -ethread 1 -ylist 15  -g 25 -preset fast -tune zerolatency    -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts -muxrate 6000000 -muxdelay 2000 -metadata service_provider="tre23" -mpegts_service_id 423 -metadata service_name="qwe1"  -muxrate2 6000000 -muxdelay2 1000 -pkt_size 1316  -sending 1 -smoothsend 0  -asisending 0 -y udp://192.168.3.169:9028?buffer_size=100000000
+ 
+ 
+ffmpeg.exe  -stats  -f decklink -i "DeckLink Studio 4K@24" -delayres 200 -s 3840x2160 -b:v 30000000  -usefast 1 -globalsendbufnum 300 -g 25 -preset superfast -tune zerolatency  -maxsendnum 90 -encserver 192.168.49.198:192.168.49.203:8901;192.168.49.198:192.168.49.203:8902;192.168.49.198:192.168.49.205:8901;192.168.49.198:192.168.49.205:8902;192.168.49.198:192.168.49.206:8901;192.168.49.198:192.168.49.206:8902;192.168.49.198:192.168.49.207:8901;192.168.49.198:192.168.49.207:8902; -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts -muxrate 35000000 -muxdelay 2000 -y udp://192.168.3.169:9002?buffer_size=100000000&pkt_size=1316
+ 
+ffmpeg.exe  -stats  -f decklink2 -i "DeckLink Studio 4K@24" -delayres 200 -s 3840x2160 -b:v 30000000 -c:v remote_libstaravs   -usefast 1 -globalsendbufnum 300 -uyvy2yuv 1 -width_enc 352 -height_enc 288 -ethread 1 -ylist 15  -g 25 -preset fast  -tune zerolatency  -maxsendnum 90 -encserver 192.168.49.198:192.168.49.203:8901;192.168.49.198:192.168.49.203:8902;192.168.49.198:192.168.49.205:8901;192.168.49.198:192.168.49.205:8902;192.168.49.198:192.168.49.206:8901;192.168.49.198:192.168.49.206:8902;192.168.49.198:192.168.49.207:8901;192.168.49.198:192.168.49.207:8902; -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts -muxrate 35000000 -muxdelay 2000 -metadata service_provider="6" -mpegts_service_id 23 -mpegts_start_pid 56 -metadata service_name="21"  -pkt_size 1316  -y udp://192.168.3.169:9028?buffer_size=100000000
+
+ffmpeg.exe  -stats  -f decklink4 -i "DeckLink Quad (1)@11" -delayres 300 -s 3840x2160 -b:v 15000000 -c:v remote_libstaravs    -reusemem 1 -usefast 1 -globalsendbufnum 300 -prelevel 2  -maxsendnum 90 -encserver 192.168.49.198:192.168.49.203:8901;192.168.49.198:192.168.49.203:8902;192.168.49.198:192.168.49.203:8903;192.168.49.198:192.168.49.203:8904;192.168.49.198:192.168.49.205:8901;192.168.49.198:192.168.49.205:8902;192.168.49.198:192.168.49.205:8903;192.168.49.198:192.168.49.205:8904;192.168.49.198:192.168.49.206:8901;192.168.49.198:192.168.49.206:8902;192.168.49.198:192.168.49.206:8903;192.168.49.198:192.168.49.206:8904;192.168.49.198:192.168.49.207:8901;192.168.49.198:192.168.49.207:8902;192.168.49.198:192.168.49.207:8903;192.168.49.198:192.168.49.207:8904; -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts  -pkt_size 1316  -y udp://192.168.3.170:9016?buffer_size=100000000
+
+enc/patchwh
+
+//设备获取命令
+ffmpeg -f decklink -list_devices 1 -i dummy
+ffmpeg -f decklink -list_formats 1 -i "DeckLink Studio 4K"
+ffmpeg -f decklink -list_formats 1 -i "DeckLink 4K Pro"
+ffmpeg -f decklink -list_formats 1 -i "DeckLink Quad (8)"
+ffmpeg -f decklink -list_formats 1 -i "DeckLink SDI (4)"
+
+//命令行拼接
+-stats -f decklink2 -bm_v210 1 -i "DeckLink Studio 4K@24" -vcodec libx264 -tune zerolatency  -preset superfast -b:v 20000k -pix_fmt yuv420p10 -c:a ac3 -b:a 128000  -f mpegts -muxrate 35000000 -muxdelay 2000 -localaddr 192.168.3.31 -y udp://192.168.3.31:9016?buffer_size=100000000
+-stats -f decklink4 -bm_v210 1 -i "DeckLink SDI (1)@8"  -b:v 5000000 -vcodec libx264a -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15 -pix_fmt yuv420p10  -g 25   -preset superfast  -tune zerolatency  -c:a ac3 -b:a 128000  -f mpegts -muxrate 10000000 -muxdelay 2000 -y udp://192.168.3.67:9028?buffer_size=100000000&pkt_size=1316
+
+//192.168.3.31
+ffmpeg.exe  -stats  -f decklink4 -reusemem 1 -bm_v210 1 -i "DeckLink Quad (1)@7"  -s 3840x2160 -vcodec libx264a -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15  -pix_fmt yuv420p10 -g 25   -preset fast  -tune zerolatency   -ac 2 -b:a 128000 -ar 48000 -c:a ac3 -f mpegts  -muxrate 35000000 -muxdelay 2000 -muxrate2 35000000 -muxdelay2 2000 -pkt_size 1316  -sending 1 -smoothsend 1 -asisending 1 -y asi://192.168.3.169:9018?buffer_size=100000000
+
+用 hevc 模拟 110 p10
+ffmpeg.exe -stats -f decklink2 -bm_v210 1 -reusemem 1 -i "DeckLink Studio 4K@24" -vcodec hevc_nvenc -zerolatency 1 -preset superfast -b:v 20000k -pix_fmt yuv420p10 -c:a ac3 -b:a 128000  -f mpegts -muxrate 35000000 -muxdelay 2000 -localaddr 192.168.3.31 -y udp://192.168.3.31:9016?buffer_size=100000000
+
+gpu 显卡不支持 p10 31
+ffmpeg.exe -stats -f decklink2 -reusemem 1 -i "DeckLink 4K Pro@25" -vcodec hevc_nvenc -zerolatency 1 -preset fast -b:v 20000k -pix_fmt yuv420p -c:a ac3 -b:a 128000  -f mpegts -muxrate 35000000 -muxdelay 2000 -localaddr 192.168.3.31 -y udp://192.168.3.31:9016?buffer_size=100000000
+
+ffmpeg.exe  -stats  -f decklink2 -reusemem 1 -i "DeckLink 4K Pro@25"  -s 3840x2160 -vcodec libx264a -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15  -pix_fmt yuv420p  -g 25   -preset fast -b:v 20000k  -zerolatency 1  -ac 2 -b:a 128000 -ar 48000 -c:a ac3 -f mpegts -muxrate 35000000 -muxdelay 2000  -y udp://192.168.3.31:9016?buffer_size=100000000
+
+ffmpeg.exe  -stats  -f decklink2 -reusemem 1 -i "DeckLink 4K Pro@25" -s 3840x2160 -b:v 20000000 -c:v libx264a   -uyvy2yuv 1 -width_enc 960 -height_enc 540 -ethread 1 -ylist 15  -pix_fmt yuv420p -g 25  -preset fast  -zerolatency 1   -ac 2 -b:a 128000 -ar 48000 -c:a ac3 -f mpegts -muxrate 30000000 -muxdelay 2000  -pkt_size 1316  -asisending 1 -y udp://192.168.3.31:9016?buffer_size=100000000
+
+//192.168.3.10
+ffmpeg.exe  -stats  -f decklink -reusemem 1 -i "DeckLink Studio 4K@24" -delayres 400(100) -s 3840x2160 -b:v 20000000 -c:v remote_libstaravs    -usefast 1 -globalsendbufnum 500(80)   -maxsendnum 90 -encserver 192.168.49.198:192.168.49.203:8901;192.168.49.198:192.168.49.203:8902;192.168.49.198:192.168.49.203:8903;192.168.49.198:192.168.49.205:8901;192.168.49.198:192.168.49.205:8902;192.168.49.198:192.168.49.205:8903;192.168.49.198:192.168.49.206:8901;192.168.49.198:192.168.49.206:8902;192.168.49.198:192.168.49.206:8903;192.168.49.198:192.168.49.207:8901;192.168.49.198:192.168.49.207:8902;192.168.49.198:192.168.49.207:8903; -ac 2 -b:a 128000 -ar 48000 -c:a libfaac -f mpegts  -pkt_size 1316  -y udp://192.168.3.169:9042?buffer_size=100000000
+
+//预览10bit
+ffplay.exe inputfile -vf scale=720x576 -pix_fmt yuv420p10 -s 3840x2160
+//转码
+ffmpeg.exe -i D:\1453446335.ts -pix_fmt yuv420p10 -s 720x576 -y 1453446335.yuv
+
+
+E:\gitwork\pku\vf\public\ffmpeg\bin64>ffmpeg  -f decklink -list_devices 1 -i dummy
+..\ffmpegavs2\src\ffmpegavs2.cpp FFMPEGAVS2Init 93
+..\ffmpegcuda\src\ffmpegcuda.cpp FFMPEGCudaInit 80 
+..\ffmpegavdevice\src\ffmpegavdevice.cpp FFMPEGAVDeviceInit 92
+[decklink @ 000001b359b96940] Blackmagic DeckLink devices:
+[decklink @ 000001b359b96940]   'DeckLink SDI (1)'
+[decklink @ 000001b359b96940]   'DeckLink SDI (2)'
+[decklink @ 000001b359b96940]   'DeckLink SDI (3)'
+[decklink @ 000001b359b96940]   'DeckLink SDI (4)'
+dummy: Immediate exit requested
+
+E:\gitwork\pku\vf\public\ffmpeg\bin64>ffmpeg -f decklink -list_formats 1 -i "DeckLink SDI (3)"
+..\ffmpegavs2\src\ffmpegavs2.cpp FFMPEGAVS2Init 93
+..\ffmpegcuda\src\ffmpegcuda.cpp FFMPEGCudaInit 80
+..\ffmpegavdevice\src\ffmpegavdevice.cpp FFMPEGAVDeviceInit 92
+[decklink @ 00000251a3476940] Supported formats for 'DeckLink SDI (3)':
+[decklink @ 00000251a3476940]   1       720x486 at 30000/1001 fps (interlaced, lower field first)
+[decklink @ 00000251a3476940]   2       720x486 at 24000/1001 fps
+[decklink @ 00000251a3476940]   3       720x576 at 25000/1000 fps (interlaced, upper field first)
+[decklink @ 00000251a3476940]   4       1920x1080 at 24000/1001 fps
+[decklink @ 00000251a3476940]   5       1920x1080 at 24000/1000 fps
+[decklink @ 00000251a3476940]   6       1920x1080 at 25000/1000 fps
+[decklink @ 00000251a3476940]   7       1920x1080 at 30000/1001 fps
+[decklink @ 00000251a3476940]   8       1920x1080 at 30000/1000 fps
+[decklink @ 00000251a3476940]   9       1920x1080 at 25000/1000 fps (interlaced, upper field first)
+[decklink @ 00000251a3476940]   10      1920x1080 at 30000/1001 fps (interlaced, upper field first)
+[decklink @ 00000251a3476940]   11      1920x1080 at 30000/1000 fps (interlaced, upper field first)
+[decklink @ 00000251a3476940]   12      1280x720 at 50000/1000 fps
+[decklink @ 00000251a3476940]   13      1280x720 at 60000/1001 fps
+[decklink @ 00000251a3476940]   14      1280x720 at 60000/1000 fps
+DeckLink SDI (3): Immediate exit requested
+
+yong hevc moni 110 p10
+-stats -f decklink2 -bm_v210 1 -reusemem 1 -i "DeckLink Studio 4K@24" -vcodec hevc_nvenc -zerolatency 1 -preset superfast -b:v 20000k -pix_fmt yuv420p10 -c:a ac3 -b:a 128000  -f mpegts -muxrate 35000000 -muxdelay 2000 -localaddr 192.168.3.31 -y udp://192.168.3.31:9016?buffer_size=100000000
+
+gpu xiankabuzhichi p10,31
+-stats -f decklink2 -reusemem 1 -i "DeckLink Studio 4K@24" -vcodec hevc_nvenc -zerolatency 1 -preset superfast -b:v 20000k -pix_fmt yuv420p -c:a ac3 -b:a 128000  -f mpegts -muxrate 35000000 -muxdelay 2000 -localaddr 192.168.3.31 -y udp://192.168.3.31:9016?buffer_size=100000000
+
+ffmpeg -stats  -f decklink -bm_v210 1 -i "DeckLink 4K Pro@7"  -pix_fmt yuv420p -s 1920x1080 -y d:\1080.yuv
+ffmpeg -stats  -f decklink -bm_v210 1 -i "DeckLink Quad (2)@11"  -pix_fmt yuv420p -s 1920x1080 -y d:\1080.yuv 
+
+//ffmpeg转码 10bit4k转cif   ts转yuv  10bit转8bit
+ffmpeg -pix_fmt yuv420p10 -s 3840x2160 -i .yuv -pix_fmt yuv420p10 -s 352x288 -y .yuv
+ffmpeg.exe -i D:\1453446335.ts -pix_fmt yuv420p10 -s 720x576 -y 1453446335.yuv
+ffmpeg -pix_fmt yuv420p10 -s 3840x2160 -i .yuv -pix_fmt yuv420p -s 3840x2160 -y .yuv
+
+//录yuv -t 几秒 -r 每秒几帧
+ffmpeg.exe  -stats  -t 1 -f decklink2    -i "DeckLink 4K Pro@25"   -pix_fmt yuv420p -s 3840x2160 -r 1 -y e:\3840x2160.yuv
+
+//测试新-c:a aac
+ffmpeg.exe -i F:\ts_tssender\1453446335.ts -s 3840x2160  -ac 2 -b:a 128000 -ar 48000 -c:a libfdk_aac -f mpegts -muxrate 42000000 -muxdelay 2000  -pkt_size 1316 -ylist 100 -y 123.yuv
+
+//ffmpeg -avsset serverencoder.ini -stats -f decklink2 -bm_v210 1  -reusememmax 360 -reusemem 1 -i "DeckLink 4K Pro@25"  -b:v 35000000 -vcodec libgavs2m2  -encnum 6 -ethread 1 -uyvy2yuv 1 -usefast 0 -pix_fmt yuv420p10 -an  -f //mpegts -pkt_size 1316 -ylist 100 -muxrate 45000000 -muxdelay 2000 -y udp://192.168.3.135:8001?buffer_size=200000000 2>>1.txt
+
+//new 参考这个
+ffmpeg -avsset serverencoder.ini -stats -f decklink2 -bm_v210 1  -reusememmax 360 -reusemem 1 -i "DeckLink 4K Pro@25"  -delayres 90   -b:v 33000000 -vcodec libgavs2m2  -encnum 6 -start_lost 200 -ethread 1 -uyvy2yuv 1 -usefast 1 -ylist 100 -pix_fmt yuv420p10 -an  -f mpegts -pkt_size 1316  -y -localaddr 192.168.3.201 udp://192.168.3.135:8001?buffer_size=200000000
+
+//192.168.3.136  10bit版本
+ffmpeg.exe  -avsset serverencoder.ini  -stats  -f decklink2 -bm_v210 1 -reusememmax 360 -reusemem 1  -i "DeckLink 4K Pro@25" -delayres 90 -s 3840x2160 -b:v 30000000 -r 25 -c:v libgavs2m2   -encnum 6 -ethread 1 -uyvy2yuv 1 -usefast 1 -ylist 100   -pix_fmt yuv420p10  -ac 2 -b:a 128000 -ar 48000 -c:a libfdk_aac -f mpegts -muxrate 36000000 -muxdelay 2000  -muxrate2 36000000 -muxdelay2 2000 -pkt_size 1316 -sending 1 -smoothsend 1 -asisending 1 -y -localaddr 192.168.3.201  asi://192.168.3.107:9026?buffer_size=300000000
+
+//本地  10bit版本
+ffmpeg.exe  -avsset serverencoder.ini  -stats  -f decklink2 -bm_v210 1 -reusememmax 360 -reusemem 1  -i "DeckLink 4K Pro@25" -delayres 90 -s 3840x2160 -b:v 36000000 -r 25 -c:v libgavs2m2   -encnum 6 -ethread 1 -uyvy2yuv 1 -usefast 1 -ylist 100   -pix_fmt yuv420p10  -ac 2 -b:a 128000 -ar 48000 -c:a libfdk_aac -f mpegts -muxrate 40000000 -muxdelay 2000  -muxrate2 40000000 -muxdelay2 2000 -pkt_size 1316 -sending 1 -smoothsend 1 -asisending 1 -y -localaddr 192.168.3.201  udp://192.168.3.107:9016?buffer_size=300000000
+
+// 8bit  记得修改serverencoder.ini中10bit=0
+ffmpeg.exe  -avsset serverencoder.ini  -stats  -f decklink2 -reusememmax 360 -reusemem 1  -i "DeckLink 4K Pro@25" -delayres 90 -s 3840x2160 -b:v 34000000 -c:v libgavs2m2   -encnum 6 -ethread 1 -usefast 1 -ylist 100   -pix_fmt yuv420p  -ac 2 -b:a 256000 -ar 48000 -c:a mp2 -f mpegts -muxrate 37000000 -muxdelay 2000  -muxrate2 37000000 -muxdelay2 2000 -pkt_size 1316 -sending 1 -smoothsend 1 -asisending 1 -y -localaddr 192.168.3.201  udp://192.168.3.170:9016?buffer_size=300000000
+
+ffmpeg录制为ts流
+./ffmpeg -i rtsp://admin:aa12345678@192.168.2.163:554/h264/ch1/main/av_stream -rtsp_transport tcp -analyzeduration 100000 -c:v copy -c:a copy -f mpegts /home/ynshi/test/test1.ts
+
+./ffmpeg -i C:\Users\Administrator\Desktop\temp\org_25i_4M_102.ts -b:v 2000000  -an -f mpegts C:\Users\Administrator\Desktop\temp\3M\org_25i_2M_102.ts
+
+ffplay播放
+./ffplay rtsp://admin:aa12345678@192.168.2.163:554/h264/ch1/main/av_stream
+
+你在cmd命令最后加上 ">(输出路径)/(文件名).txt" 
+
+ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0 -i D:/vf_ffmpeg333_syn/test/test1080.ts  -vcodec h264_nvenc -f mpegts -y D:/vf_ffmpeg333_syn/test/output1080.ts
+
+ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0 -i D:/vf_ffmpeg333_syn/test/test1080_2.ts  -vcodec h264_nvenc -f mpegts D:/vf_ffmpeg333_syn/test/output1080_2.ts
+
+ffmpeg -i D:/vf_ffmpeg333_syn/test/test1080_2.ts  -vcodec h264_nvenc -f mpegts -y D:/vf_ffmpeg333_syn/test/test1080_2.ts
+
+ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0 -i D:/vf_ffmpeg333_syn/test/test1080.ts -s 352x288  -vcodec h264_nvenc -f mpegts D:/vf_ffmpeg333_syn/test/output1080.ts
+
+
+ffmpeg.exe -re -i F:\ts_tssender\1453446335.ts -vcodec libx264a2 -preset fast  -tune zerolatency   -b:v 1000000 -an -f mpegts -y F:\bin64\testseq\a2.ts
+
+ffmpeg.exe -re -i F:\ts_tssender\1453446335.ts -vcodec libx264 -preset fast  -tune zerolatency   -b:v 1000000 -an -filter:v select='gt(scene,0.1)' -f mpegts -y F:\bin64\testseq\x264_scene.ts
+
+ffmpeg.exe -i F:\ts_tssender\1453446335.ts -filter:v select='gt(scene,0.1)'  -y F:\ts_tssender\yuv\1.yuv
+
+cdvs_demo 简化版本
+
+主码流
+rtsp://admin:pkusoc123456@192.168.2.161:554/h264/ch1/main/av_stream
+rtsp://admin:aa12345678@192.168.2.111:554/h264/ch1/main/av_stream
+
+子码流
+rtsp://admin:pkusoc123456@192.168.2.161:554/h264/ch1/sub/av_stream
+rtsp://admin:aa12345678@192.168.2.111:554/h264/ch1/sub/av_stream
+
+第三码流
+rtsp://admin:pkusoc123456@192.168.2.161:554/ISAPI/streaming/channels/103?auth=YWRtaW46YWRtaW4xMjM0NTY=
+
+vlc播放rtsp的视频	http://blog.csdn.net/caoshangpa/article/details/53156061
+
+-rtsp_transport tcp -analyzeduration 100000 需要放到-i之前才能正确传输
+
+ffmpeg 裁剪
+ffmpeg -ss 0:0:0 -t 0:2:45 -i D:\dev\vedioseq\org\org_161.ts -vcodec copy -an -f mpegts -y  D:\dev\vedioseq\org\syn161.ts
+
+jquery可以直接在网页上引用，不必非要加载到源文件中
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+<!-- 新 Bootstrap 核心 CSS 文件 -->
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+ 
+<!-- 可选的Bootstrap主题文件（一般不使用） -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"></script>
+ 
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+ 
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+mockplus 原型图设计工具（产品经理） axure
+
+rem call   testone.bat 1  192.168.49.206 8901 8902 8903 9010
+rem call   testone.bat 2 192.168.49.206 8904 8905 8906 9012
+rem call   testone.bat 3  192.168.49.207 8901 8902 8903 9014
+rem call   testone.bat 4  192.168.49.207 8904 8905 8906 9016
+rem call   testone.bat 1  192.168.49.208 8901 8902 8903 9010
+start call   testone.bat 2 192.168.49.208 8904 8905 8906 9012
+start call   testone.bat 3 192.168.49.213 8901 8902 8903 9014
+start  call   testone.bat 4 192.168.49.213 8904 8905 8906 9016
+ call   testone.bat 1 192.168.49.215 8901 8902 8903 9010
+ call   testone.bat 2 192.168.49.215 8904 8905 8906 9012
+ call   testone.bat 3 192.168.49.220 8901 8902 8903 9014
+ call   testone.bat 4 192.168.49.220 8904 8905 8906 9016
+
+
+start ffmpeg.exe  -stats -f decklink2 -reusemem 1 -i "DeckLink Quad (%1)@13" -delayres 150 -s 1920x1080 -r 30 -b:v 5000000 -c:v remote_libstaravs    -usefast 1 -globalsendbufnum 80   -maxsendnum 90 -prelevel 2 -encserver 192.168.49.198:%2:%3;192.168.49.198:%2:%4;; -an -f mpegts  -pkt_size 1316  -y udp://172.16.3.169:%6?buffer_size=100000000
+
+win10：
+	1）win+G录屏；
+	2）ctrl+shift+t 恢复关闭网页；
+	3）win+r psr 录制操作步骤；
+	
+192.168.2.211 5000 192.168.2.211 5001	
+192.168.2.211 5010 192.168.2.211 5011
+192.168.2.211 5020 192.168.2.211 5021
+192.168.2.211 5030 192.168.2.211 5031
+192.168.2.211 5040 192.168.2.211 5041
+192.168.2.211 5050 192.168.2.211 5051
+192.168.2.211 5060 192.168.2.211 5061
+192.168.2.211 5070 192.168.2.211 5071
+192.168.2.211 5080 192.168.2.211 5081 
+
+
+
+
+
+
+start   tran2.bat   192.168.2.211 5000 192.168.2.211 5001	
+start   tran2.bat   192.168.2.211 5002 192.168.2.211 5003
+start   tran2.bat   192.168.2.211 5004 192.168.2.211 5005
+start   tran2.bat   192.168.2.211 5006 192.168.2.211 5007
+start   tran2.bat   192.168.2.211 5008 192.168.2.211 5009
+start   tran2.bat   192.168.2.211 5010 192.168.2.211 5011
+start   tran2.bat   192.168.2.211 5012 192.168.2.211 5013
+rem start   tran2.bat   192.168.2.211 5014 192.168.2.211 5015
+rem start   tran2.bat   192.168.2.211 5016 192.168.2.211 5017 
+
+
+ start   tran2live.bat   192.168.2.211 5018 192.168.2.211 5019 		rtsp://admin:aa12345678@192.168.2.102:554/h264/ch1/main/av_stream
+rem start   tran2live.bat   192.168.2.211 5020 192.168.2.211 5021 		rtsp://admin:aa12345678@192.168.2.102:554/h264/ch1/main/av_stream
+
+rem start   tran2live.bat   192.168.2.211 5110 192.168.2.211 5111 		rtsp://admin:pkusoc123456@192.168.2.161:554/h264/ch1/main/av_stream
+rem start   tran2live.bat   192.168.2.211 5120 192.168.2.211 5121 		rtsp://admin:pkusoc123456@192.168.2.161:554/h264/ch1/main/av_stream
+
+rem start   tran2live.bat   192.168.2.211 5130 192.168.2.211 5131 		rtsp://admin:pkusoc123456@192.168.2.160:554/h264/ch1/main/av_stream
+rem start   tran2live.bat   192.168.2.211 5140 192.168.2.211 5141 		rtsp://admin:pkusoc123456@192.168.2.160:554/h264/ch1/main/av_stream
+
+
+open failed udp://192.168.2.211:210 unix:LIBS+=-lzmq
+
+	location ~ /picture/getfeature$ {
+		fastcgi_pass 127.0.0.1:8090;
+		fastcgi_keep_conn on;
+		include fastcgi_params;
+	    }
+
+	location ~ /picture/search$ {
+		fastcgi_pass 127.0.0.1:8090;
+		fastcgi_keep_conn on;
+		include fastcgi_params;
+	    }
+
+
+C:\AVS2Encoder\vf_ffmpeg333>ffmpeg -f decklink -list_formats 1 -i "DeckLink 4K Extreme 12G"
+..\ffmpegavs2\src\ffmpegavs2.cpp FFMPEGAVS2Init 105
+..\ffmpegavs2patch\src\ffmpegavs2patch.cpp FFMPEGAVS2PatchInit 86
+..\ffmpegencoder\src\ffmpegencoder.cpp FFMPEG_ENCODER_Init 103
+..\ffmpegcuda\src\ffmpegcuda.cpp FFMPEGCudaInit 79
+..\ffmpegavdevice\src\ffmpegavdevice.cpp FFMPEGAVDeviceInit 95
+[decklink @ 00000087e1ad81c0] Supported formats for 'DeckLink 4K Extreme 12G':
+        format_code     description
+        ntsc            720x486 at 30000/1001 fps       1       720x486 at 30000/1001 fps (interlaced, lower field first)
+        pal             720x576 at 25000/1000 fps       2       720x576 at 25000/1000 fps (interlaced, upper field first)
+        23ps            1920x1080 at 24000/1001 fps     3       1920x1080 at 24000/1001 fps
+        24ps            1920x1080 at 24000/1000 fps     4       1920x1080 at 24000/1000 fps
+        Hp25            1920x1080 at 25000/1000 fps     5       1920x1080 at 25000/1000 fps
+        Hp29            1920x1080 at 30000/1001 fps     6       1920x1080 at 30000/1001 fps
+        Hp30            1920x1080 at 30000/1000 fps     7       1920x1080 at 30000/1000 fps
+        Hi50            1920x1080 at 25000/1000 fps     8       1920x1080 at 25000/1000 fps (interlaced, upper field first)
+        Hi59            1920x1080 at 30000/1001 fps     9       1920x1080 at 30000/1001 fps (interlaced, upper field first)
+        Hi60            1920x1080 at 30000/1000 fps     10      1920x1080 at 30000/1000 fps (interlaced, upper field first)
+        Hp50            1920x1080 at 50000/1000 fps     11      1920x1080 at 50000/1000 fps
+        Hp59            1920x1080 at 60000/1001 fps     12      1920x1080 at 60000/1001 fps
+        Hp60            1920x1080 at 60000/1000 fps     13      1920x1080 at 60000/1000 fps
+        hp50            1280x720 at 50000/1000 fps      14      1280x720 at 50000/1000 fps
+        hp59            1280x720 at 60000/1001 fps      15      1280x720 at 60000/1001 fps
+        hp60            1280x720 at 60000/1000 fps      16      1280x720 at 60000/1000 fps
+        2d23            2048x1080 at 24000/1001 fps     17      2048x1080 at 24000/1001 fps
+        2d24            2048x1080 at 24000/1000 fps     18      2048x1080 at 24000/1000 fps
+        2d25            2048x1080 at 25000/1000 fps     19      2048x1080 at 25000/1000 fps
+        4k23            3840x2160 at 24000/1001 fps     20      3840x2160 at 24000/1001 fps
+        4k24            3840x2160 at 24000/1000 fps     21      3840x2160 at 24000/1000 fps
+        4k25            3840x2160 at 25000/1000 fps     22      3840x2160 at 25000/1000 fps
+        4k29            3840x2160 at 30000/1001 fps     23      3840x2160 at 30000/1001 fps
+        4k30            3840x2160 at 30000/1000 fps     24      3840x2160 at 30000/1000 fps
+        4k50            3840x2160 at 50000/1000 fps     25      3840x2160 at 50000/1000 fps
+        4k59            3840x2160 at 60000/1001 fps     26      3840x2160 at 60000/1001 fps
+        4k60            3840x2160 at 60000/1000 fps     27      3840x2160 at 60000/1000 fps
+        4d23            4096x2160 at 24000/1001 fps     28      4096x2160 at 24000/1001 fps
+        4d24            4096x2160 at 24000/1000 fps     29      4096x2160 at 24000/1000 fps
+        4d25            4096x2160 at 25000/1000 fps     30      4096x2160 at 25000/1000 fps
+
+ffmpeg 获取dev_format信息，index化
+    int i = 0;
+    while (itermode->Next(&mode) == S_OK) {
+        BMDTimeValue tb_num, tb_den;
+        mode->GetFrameRate(&tb_num, &tb_den);
+        format_code = av_bswap32(mode->GetDisplayMode());
+        av_log(avctx, AV_LOG_INFO, "\n\t%.4s\t\t%ldx%ld at %d/%d fps",
+                (char*) &format_code, mode->GetWidth(), mode->GetHeight(),
+                (int) tb_den, (int) tb_num);
+        av_log(avctx, AV_LOG_INFO, "\t%d\t%ldx%ld at %d/%d fps",
+            ++i, mode->GetWidth(), mode->GetHeight(),
+            (int)tb_den, (int)tb_num);
+
+
+
+root      2946  0.0  0.4 74068868 593552 pts/0 Sl   May07   0:23 ./CnnExtractor vehicle2.cfg
+root      2968  0.0  0.4 74072600 594524 pts/0 Sl   May07   0:23 ./CnnExtractor vehicle.cfg
+root      3028  0.0  0.5 75138756 665408 pts/0 Sl   May07   0:23 ./CnnExtractor person.cfg
+[root@localhost syn]# cd /root/program/CnnE2/
+
+
+出现身份验证错误 要求的函数不受支持
+https://go.microsoft.com/fwlink/?linkid=866660
+
+a) 通用选项
+
+-L license
+-h 帮助
+-fromats 显示可用的格式，编解码的，协议的...
+-f fmt 强迫采用格式fmt
+-I filename 输入文件
+-y 覆盖输出文件
+-t duration 设置纪录时间 hh:mm:ss[.xxx]格式的记录时间也支持
+-ss position 搜索到指定的时间 [-]hh:mm:ss[.xxx]的格式也支持
+-title string 设置标题
+-author string 设置作者
+-copyright string 设置版权
+-comment string 设置评论
+-target type 设置目标文件类型(vcd,svcd,dvd) 所有的格式选项（比特率，编解码以及缓冲区大小）自动设置，只需要输入如下的就可以了：ffmpeg -i myfile.avi -target vcd /tmp/vcd.mpg
+-hq 激活高质量设置
+-itsoffset offset 设置以秒为基准的时间偏移，该选项影响所有后面的输入文件。该偏移被加到输入文件的时戳，定义一个正偏移意味着相应的流被延迟了 offset秒。 [-]hh:mm:ss[.xxx]的格式也支持
+
+b) 视频选项
+
+-b bitrate 设置比特率，缺省200kb/s
+-r fps 设置帧频 缺省25
+-s size 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用：
+Sqcif 128X96 qcif 176X144 cif 252X288 4cif 704X576
+-aspect aspect 设置横纵比 4:3 16:9 或 1.3333 1.7777
+-croptop size 设置顶部切除带大小 像素单位
+-cropbottom size –cropleft size –cropright size
+-padtop size 设置顶部补齐的大小 像素单位
+-padbottom size –padleft size –padright size –padcolor color 设置补齐条颜色(hex,6个16进制的数，红:绿:兰排列，比如 000000代表黑色)
+-vn 不做视频记录
+-bt tolerance 设置视频码率容忍度kbit/s
+-maxrate bitrate设置最大视频码率容忍度
+-minrate bitreate 设置最小视频码率容忍度
+-bufsize size 设置码率控制缓冲区大小
+-vcodec codec 强制使用codec编解码方式。如果用copy表示原始编解码数据必须被拷贝。
+-sameq 使用同样视频质量作为源（VBR）
+-pass n 选择处理遍数（1或者2）。两遍编码非常有用。第一遍生成统计信息，第二遍生成精确的请求的码率
+-passlogfile file 选择两遍的纪录文件名为file
+
+c)高级视频选项
+
+-g gop_size 设置图像组大小
+-intra 仅适用帧内编码
+-qscale q 使用固定的视频量化标度(VBR)
+-qmin q 最小视频量化标度(VBR)
+-qmax q 最大视频量化标度(VBR)
+-qdiff q 量化标度间最大偏差 (VBR)
+-qblur blur 视频量化标度柔化(VBR)
+-qcomp compression 视频量化标度压缩(VBR)
+-rc_init_cplx complexity 一遍编码的初始复杂度
+-b_qfactor factor 在p和b帧间的qp因子
+-i_qfactor factor 在p和i帧间的qp因子
+-b_qoffset offset 在p和b帧间的qp偏差
+-i_qoffset offset 在p和i帧间的qp偏差
+-rc_eq equation 设置码率控制方程 默认tex^qComp
+-rc_override override 特定间隔下的速率控制重载
+-me method 设置运动估计的方法 可用方法有 zero phods log x1 epzs(缺省) full
+-dct_algo algo 设置dct的算法 可用的有 0 FF_DCT_AUTO 缺省的DCT 1 FF_DCT_FASTINT 2 FF_DCT_INT 3 FF_DCT_MMX 4 FF_DCT_MLIB 5 FF_DCT_ALTIVEC
+-idct_algo algo 设置idct算法。可用的有 0 FF_IDCT_AUTO 缺省的IDCT 1 FF_IDCT_INT 2 FF_IDCT_SIMPLE 3 FF_IDCT_SIMPLEMMX 4 FF_IDCT_LIBMPEG2MMX 5 FF_IDCT_PS2 6 FF_IDCT_MLIB 7 FF_IDCT_ARM 8 FF_IDCT_ALTIVEC 9 FF_IDCT_SH4 10 FF_IDCT_SIMPLEARM
+-er n 设置错误残留为n 1 FF_ER_CAREFULL 缺省 2 FF_ER_COMPLIANT 3 FF_ER_AGGRESSIVE 4 FF_ER_VERY_AGGRESSIVE
+-ec bit_mask 设置错误掩蔽为bit_mask,该值为如下值的位掩码 1 FF_EC_GUESS_MVS (default=enabled) 2 FF_EC_DEBLOCK (default=enabled)
+-bf frames 使用frames B 帧，支持mpeg1,mpeg2,mpeg4
+-mbd mode 宏块决策 0 FF_MB_DECISION_SIMPLE 使用mb_cmp 1 FF_MB_DECISION_BITS 2 FF_MB_DECISION_RD
+-4mv 使用4个运动矢量 仅用于mpeg4
+-part 使用数据划分 仅用于mpeg4
+-bug param 绕过没有被自动监测到编码器的问题
+-strict strictness 跟标准的严格性
+-aic 使能高级帧内编码 h263+
+-umv 使能无限运动矢量 h263+
+-deinterlace 不采用交织方法
+-interlace 强迫交织法编码仅对mpeg2和mpeg4有效。当你的输入是交织的并且你想要保持交织以最小图像损失的时候采用该选项。可选的方法是不交织，但是损失更大
+-psnr 计算压缩帧的psnr
+-vstats 输出视频编码统计到vstats_hhmmss.log
+-vhook module 插入视频处理模块 module 包括了模块名和参数，用空格分开
+
+D)音频选项
+
+-ab bitrate 设置音频码率
+-ar freq 设置音频采样率
+-ac channels 设置通道 缺省为1
+-an 不使能音频纪录
+-acodec codec 使用codec编解码
+
+E)音频/视频捕获选项
+
+-vd device 设置视频捕获设备。比如/dev/video0
+-vc channel 设置视频捕获通道 DV1394专用
+-tvstd standard 设置电视标准 NTSC PAL(SECAM)
+-dv1394 设置DV1394捕获
+-av device 设置音频设备 比如/dev/dsp
+
+F)高级选项
+
+-map file:stream 设置输入流映射
+-debug 打印特定调试信息
+-benchmark 为基准测试加入时间
+-hex 倾倒每一个输入包
+-bitexact 仅使用位精确算法 用于编解码测试
+-ps size 设置包大小，以bits为单位
+-re 以本地帧频读数据，主要用于模拟捕获设备
+-loop 循环输入流（只工作于图像流，用于ffserver测试）
+
+ffmpeg 裁剪
+ffmpeg -ss 0:0:0 -t 0:3:00 -i D:\视频\265seq\out_hq_768k.ts -vcodec copy -an -f mpegts -y  D:\视频\265seq\out_hq_768k_180s.ts
+
+查看笔记本电池基本信息：powercfg命令能够查看电池的基本信息
+
+
+
+
+ffmpeg截取一段视频中一段视频 
+（这个是好使的）ffmpeg.exe  -ss 2150  -t 140  -i E:/seq/test_shuzishiwangmo.mp4 -vcodec copy -an  -f mpegts E:\syn\tranmgr\out36_38.ts
+
+ffmpeg  -i ./plutopr.mp4 -vcodec copy -acodec copy -ss 00:00:10 -to 00:00:15 ./cutout1.mp4 -y
+
+-ss time_off        set the start time offset 设置从视频的哪个时间点开始截取，上文从视频的第10s开始截取
+-to 截到视频的哪个时间点结束。上文到视频的第15s结束。截出的视频共5s.
+如果用-t 表示截取多长的时间如 上文-to 换位-t则是截取从视频的第10s开始，截取15s时长的视频。即截出来的视频共15s.
+
+注意的地方是：
+ 如果将-ss放在-i ./plutopr.mp4后面则-to的作用就没了，跟-t一样的效果了，变成了截取多长视频。一定要注意-ss的位置。
+
+参数解析
+-vcodec copy表示使用跟原视频一样的视频编解码器。
+-acodec copy表示使用跟原视频一样的音频编解码器。
+
+-i 表示源视频文件
+-y 表示如果输出文件已存在则覆盖。
+
+ffmpeg -i a.mp4 -vcodec libx264 -f rtsp rtsp://127.0.0.1:5050/ok
+
+ffmpeg -re -i *.mp4 -vcodec libx264 -acodec copy -f rtsp -rtsp_transport tcp rtsp://ip:port/*.sdp
+
+这是服务器上特斯拉K80的信息。 
+上面的表格中： 
+第一栏的Fan：N/A是风扇转速，从0到100%之间变动，这个速度是计算机期望的风扇转速，实际情况下如果风扇堵转，可能打不到显示的转速。有的设备不会返回转速，因为它不依赖风扇冷却而是通过其他外设保持低温（比如我们实验室的服务器是常年放在空调房间里的）。 
+第二栏的Temp：是温度，单位摄氏度。 
+第三栏的Perf：是性能状态，从P0到P12，P0表示最大性能，P12表示状态最小性能。 
+第四栏下方的Pwr：是能耗，上方的Persistence-M：是持续模式的状态，持续模式虽然耗能大，但是在新的GPU应用启动时，花费的时间更少，这里显示的是off的状态。 
+第五栏的Bus-Id是涉及GPU总线的东西，domain:bus:device.function 
+第六栏的Disp.A是Display Active，表示GPU的显示是否初始化。 
+第五第六栏下方的Memory Usage是显存使用率。 
+第七栏是浮动的GPU利用率。 
+第八栏上方是关于ECC的东西。 
+第八栏下方Compute M是计算模式。 
+下面一张表示每个进程占用的显存使用率。
+
+显存占用和GPU占用是两个不一样的东西，显卡是由GPU和显存等组成的，显存和GPU的关系有点类似于内存和CPU的关系。我跑caffe代码的时候显存占得少，GPU占得多，师弟跑TensorFlow代码的时候，显存占得多，GPU占得少。
+
+int64_t getCurrentTime()      //直接调用这个函数就行了，返回值最好是int64_t，long long应该也可以  
+{      
+   struct timeval tv;      
+   gettimeofday(&tv,NULL);    //该函数在sys/time.h头文件中  
+   return tv.tv_sec * 1000 + tv.tv_usec / 1000;      
+}  
+
+博云aes配置
+即: nohup sh xxxx.sh >> /var/log/xxxx.log 2>&1 &
+然后可通过cat /dev/null > /var/log/xxxx.log 清空该文件并释放空间
+
+博云返回List sample
+{"code":0,"message":"success","data":[{"session_id":"6c492a26-383f-4b43-a9cf-2ead8387fc24","dev_id":"103","channel":1,"idle":0.018140},{"session_id":"6ea18404-ad34-4ecd-a1e2-1db6c02d7633","dev_id":"108","channel":6,"idle":0.065521},{"session_id":"6f4c2138-3346-42b6-bc94-abd7fb5468cf","dev_id":"106","channel":4,"idle":0.133415},{"session_id":"8d6a0d37-8d6c-4e6f-8c8c-9c287e6b6730","dev_id":"107","channel":5,"idle":0.188882},{"session_id":"a948c928-cb49-4036-a984-23d9048a8b12","dev_id":"102","channel":0,"idle":0.055358},{"session_id":"acea6b14-05c8-4b05-9274-7830a6f2be84","dev_id":"104","channel":2,"idle":0.021656},{"session_id":"c0fe5d70-0799-465b-b3ec-8b16e3fa59d6","dev_id":"110","channel":8,"idle":0.095101},{"session_id":"c3f16e8d-1027-402f-a4cd-3ef4cc719ac2","dev_id":"105","channel":3,"idle":0.116640},{"session_id":"d4736afd-ff63-4023-8c38-764bd2b764bb","dev_id":"109","channel":7,"idle":0.173314}]}
+
+
+博云CNN配置
+/root/program/CnnE2		./start_Cnn.sh

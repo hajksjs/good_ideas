@@ -1,0 +1,350 @@
+Hyper fast Audio and Video encoder
+usage: ffmpeg [options] [[infile options] -i infile]... {[outfile options] outfile}...
+
+Use -h to get full help or, even better, run 'man ffmpeg'
+test@test-virtual-machine:~/Downloads/soft/ffmpeg/host/bin$ 
+
+
+
+/usr/local/bin/charm
+
+
+windows 往 linux 拷贝东西的时候最好都通过压缩包
+
+1、sudo nautilus 打开文件夹  	nemo（更好用一点）
+
+2、 tar xvJf  ***.tar.xz 解压文件夹
+
+3、sudo : 暂时切换到超级用户模式以执行超级用户权限，提示输入密码时该密码为当前用户的密码，而不是超级账户的密码。不过有时间限制，Ubuntu默认为一次时长15分钟。
+su ： 切换到某某用户模式，提示输入密码时该密码为切换后账户的密码，用法为“su 账户名称”。如果后面不加账户时系统默认为root账户，密码也为超级账户的密码。没有时间限制。
+sudo -i: 为了频繁的执行某些只有超级用户才能执行的权限，而不用每次输入密码，可以使用该命令。提示输入密码时该密码为当前账户的密码。没有时间限制。执行该命令后提示符变为“#”而不是“$”。想退回普通账户时可以执行“exit”或“logout” 。
+
+
+sudo -i 直接运行sudo命令加-i参数
+sudo su 运行sudo命令给su命令提权，运行su命令。
+sudo -i 运行结果 PWD=/root
+sudo su 运行结果 PWD=/home/用户名（当前用户主目录）
+
+	make -j 20 多线程运行
+
+
+　　相关命令：
+
+　　cd 路径                   （进入一个路径，比如 /usr/local/lib）
+
+　　cd ..　　  　　　　  （返回上一个文件夹）
+
+　　ls　　　　　　　　 （显示当前文件夹下的所有文件，Linux独有哦，dir 也有相同功能）
+
+　　sudo 命令　　　　 （获取超级管理权限，需要输入密码）
+
+ 
+
+　　常用新建、删除、拷贝命令：
+
+　　mkdir 目录名        （新建一个文件夹，文件夹在Linux系统中叫做“目录”）
+
+　　touch 文件名        （新建一个空文件）
+
+ 
+
+　　rmdir 目录名        （删除一个空文件夹，文件夹里有内容则不可用）
+
+　　rm -rf 非空目录名 （删除一个包含文件的文件夹）
+
+　　rm 文件名 文件名 （删除多个文件）
+
+ 
+
+　　cp 文件名 目标路径（拷贝一个文件到目标路径，如cp hserver /opt/hqueue）
+
+　　cp -i　　　　　　  （拷贝，同名文件存在时，输出 [yes/no] 询问是否执行）
+
+　　cp -f　　　　　　  （强制复制文件，如有同名不询问）
+
+ 
+
+　　常用解压、安装程序、文件更新命令：deb格式双击即可安装
+
+　　tar -zxvf *.tar.gz　     ( 解压 tar.gz格式的文件 )
+
+　　source *.install　　　 （安装install格式的安装包）
+
+　　sh 路径/×.sh　　    　 （安装sh格式的文件，如 sudo sh /home/hp/Downloads/*.sh）
+
+　　sudo apt-get upgrade（更新已安装的包）
+
+　　sudo apt-get update  （更新源）
+
+rpm其实不是软件包，而debian系统下的包管理机制，如果要安装rpm格式按以下步骤：
+
+　　方法一：先用alien把rpm转deb
+
+　　　　安装alien： sudo apt-get install alien
+
+　　　　转换为deb包：alien -d xxx.rpm  （deb包在UBuntu下可以直接双击安装） 
+
+　　　　直接安装：alien -i xxx.rpm
+
+　　方法二：安装rpm包管理器
+
+　　　　获取安装：sudo apt-get install rpm 
+
+　　　　创建文件夹：mkdir /var/lib/rpm
+
+　　　　初始化：rpm --initdb　 
+
+　　　　安装rpm文件：rpm -ivh xxx.rpm
+
+ 
+
+　　chmod +x *.sh 这个命令是为sh文件增加可执行权限；
+
+　　chmod -R 777 *.* 
+	对当前目录下的所有子目录和子文件进行777权限的变更；通在安装软件时复制相关文件。
+
+	chmod [-cfvR] [--help] [--version] mode file... 
+	
+	查询各文件占用空间
+	du -ah --max-depth=1
+	查看磁盘整体容量分布
+	df   -h
+	查看硬盘分区
+	sudo fdisk -l
+
+说明 : Linux/Unix 的档案调用权限分为三级 : 档案拥有者、群组、其他。利用 chmod 可以藉以控制档案如何被他人所调用。 
+
+参数 : 
+mode : 权限设定字串，格式如下 : [ugoa...][[+-=][rwxX]...][,...]，其中 
+u 表示该档案的拥有者，g 表示与该档案的拥有者属于同一个群体(group)者，o 表示其他以外的人，a 表示这三者皆是。 
++ 表示增加权限、- 表示取消权限、= 表示唯一设定权限。 
+r 表示可读取，w 表示可写入，x 表示可执行，X 表示只有当该档案是个子目录或者该档案已经被设定过为可执行。 
+-c : 若该档案权限确实已经更改，才显示其更改动作 
+-f : 若该档案权限无法被更改也不要显示错误讯息 
+-v : 显示权限变更的详细资料 
+-R : 对目前目录下的所有档案与子目录进行相同的权限变更(即以递回的方式逐个变更) 
+--help : 显示辅助说明 
+--version : 显示版本 linux
+	
+	ls -al    -->显示文件属性！
+
+5、
+	ps -ef|grep nginx  显示的项目有：UID , PID , PPID , C , STIME , TTY , TIME , CMD
+	ps aux|grep nginx  显示的项目有：USER , PID , %CPU , %MEM , VSZ , RSS , TTY , STAT , START , TIME , COMMAND
+
+从容停止Nginx：
+kill -QUIT 主进程号  
+例如：kill -QUIT 16391
+
+快速停止Nginx：
+kill -TERM 主进程号  
+
+强制停止Nginx：
+kill -9 主进程号  
+
+6、nginx 
+	root /usr/share/nginx/html
+	
+	/home/test/Project/transcoder/nginx/sbin/nginx
+	
+	删除nginx http://blog.csdn.net/u010571844/article/details/50819704
+	
+	
+7、mysql -uroot -p
+
+8、192.168.3.140  ynshi  test
+
+9、echo LD_LIBRARY_PATH
+
+10、
+	#!/bin/sh
+	export LD_LIBRARY_PATH=/home/ynshi/bin:$LD_LIBRARY_PATH
+	
+	export LD_LIBRARY_PATH=/home/ynshi/ffmpeg_333/lib:$LD_LIBRARY_PATH
+
+	
+	//带cuda
+	./ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0 -rtsp_transport tcp -analyzeduration 100000   -i rtsp://admin:pkusoc123456@192.168.2.165:554/h264/ch1/main/av_stream -vcodec h264_nvenc /home/ynshi/bin/output0.264
+	
+	./ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0  -rtsp_transport tcp -analyzeduration 100000 -i rtsp://admin:pkusoc123456@192.168.2.166:554/h264/ch1/main/av_stream  -vcodec h264_nvenc /home/ynshi/bin/output1.264
+
+	//不带cuda
+	./ffmpeg -rtsp_transport tcp -analyzeduration 100000   -i rtsp://admin:pkusoc123456@192.168.2.165:554/h264/ch1/main/av_stream -vcodec h264 /home/ynshi/bin/output1.264
+		
+	//发组播
+	./ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0 -rtsp_transport tcp -analyzeduration 100000 -i rtsp://admin:pkusoc123456@192.168.2.165:554/h264/ch1/main/av_stream  -c copy -vcodec h264_nvenc -f mpegts udp://233.233.233.233:9008
+	
+	//收组播
+	./ffmpeg -y -hwaccel cuvid -c:v h264_cuvid -vsync 0 -rtsp_transport tcp -analyzeduration 100000  -i udp://233.233.233.233:9008  -vcodec h264_nvenc /home/ynshi/output_cuda.264
+	
+	//ffmpeg录制为ts流
+	./ffmpeg -i rtsp://admin:aa12345678@192.168.2.163:554/h264/ch1/main/av_stream -rtsp_transport tcp -analyzeduration 100000 -c:v copy -c:a copy -f mpegts /home/ynshi/test/test1.ts
+
+11、
+	#!/bin/sh
+	./configure --enable-shared --enable-gpl --enable-nonfree --enable-nvenc --enable-cuda --enable-cuvid --enable-runtime-cpudetect --enable-zlib --enable-libx264 --enable-libfdk-aac --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib --prefix=../
+	
+	bash ./configure --enable-shared --enable-gpl --enable-nonfree --enable-runtime-cpudetect --enable-zlib --enable-libx264 --enable-libfdk-aac --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib --prefix=../ffmpeg_nocuda
+	
+12、
+	./ffmpeg -c:v h264_cuvid（硬解）  -vsync 0  -rtsp_transport tcp -analyzeduration 100000  -i rtsp://admin:pkusoc123456@192.168.2.161:554/h264/ch1/main/av_stream -vcodec libx264（软编） -f mpegts udp://192.168.3.190:9001 2>sub/1.txt & 
+	
+	./ffmpeg -y -hwaccel cuvid（这个是硬编硬解的加速） -c:v h264_cuvid（硬解） -vsync 0  -rtsp_transport tcp -analyzeduration 100000  -i rtsp://admin:aa12345678@192.168.2.163:554/h264/ch1/main/av_stream -vcodec h264_nvenc（硬编） -y /home/ynshi/test/output1.ts
+	
+	hevc_nvenc
+	
+13、
+	nvidia-smi 查看gpu
+	htop 查看cpu
+	git clone http://ynshi:syn123456@192.168.3.20:3333/git/monitorserver.git 	克隆git
+	git clone http://ynshi:syn123456@192.168.3.20:3333/git/pytest.git
+
+	
+14、
+	硬编硬解	20路	24fps	cpu 10% gpu 7%  存储 60%	（原始尺寸）	
+	硬解软编	20路	25fps	cpu 70%	gpu 12% 存储 45%	（原始尺寸）
+	硬解软编	20路	25fps	cpu 15%	gpu 12% 存储 45%	（cif 352x288）
+
+15、？奇怪啊为什么nginx只读同一个路径的配置文件
+	192.168.3.140 nginx页面路径 /usr/local/nginx/html；nginx启动路径 /usr/local/nginx/sbin；配置文件 /usr/local/nginx/conf
+	
+	加 $PWD	设置当前路径
+	
+16、配置nginx到自定义目录
+
+./configure --sbin-path=/home/ynshi/dev/nginx-1.4.2/syn/nginx --conf-path=/home/ynshi/dev/nginx-1.4.2/syn/nginx.conf --pid-path=/home/ynshi/dev/nginx-1.4.2/syn/nginx.pid --prefix=/home/ynshi/dev/nginx-1.4.2/syn
+
+server中的root修改是的nginx默认的工作区域 不是80端口的话必须在网址上加上端口号
+root /home/ynshi/work/monitorserver/bin64/;
+
+-c 制定nginx读取配置文件
+
+fcgi 加-n来查看报错信息
+
+17、配置web
+	pip install six -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.co
+	sudo pip install python-socketio -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.co
+	pip install scikit-image scikit-learn
+	pip install scikit-image scikit-learn -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com
+	sudo pip install scikit-image scikit-learn -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com
+	sudo pip install Werkzeug -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com
+    pip list
+    sudo apt-get install python-setuptools
+    pip list
+    sudo apt-get install python-dev
+    sudo easy_install twisted
+    pip install flask-uploads
+    sudo pip install flask-uploads
+    sudo pip install flask-socketio -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com
+    sudo pip install opencv-python -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com
+    sudo pip install psutil -i http://pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com
+    sudo apt-get install  mysql-client
+    sudo apt-get install mysql-server
+    history
+	
+18、搜索文件
+	1.whereis 文件名
+	2.find / -name 文件名
+	3.locate 文件名（推荐）
+	
+19、AngularJS JQuery
+
+20、暂时获取数据库图片
+/home/soc/nginx_1.13.8/sbin/nginx -c /home/soc/nginx_1.13.8/conf/nginx.conf
+
+sh /home/soc/nginx_1.13.8/sbin/startpic.sh
+
+source /etc/profile 调用java的什么东西
+
+21、
+tar命令
+
+　　解包：tar zxvf FileName.tar
+
+　　打包：tar czvf FileName.tar DirName
+
+gz命令
+
+　　解压1：gunzip FileName.gz
+
+　　解压2：gzip -d FileName.gz
+
+　　压缩：gzip FileName
+
+　　.tar.gz 和 .tgz
+
+　　解压：tar zxvf FileName.tar.gz
+
+　　压缩：tar zcvf FileName.tar.gz DirName
+
+   压缩多个文件：tar zcvf FileName.tar.gz DirName1 DirName2 DirName3 ...
+
+bz2命令
+
+　　解压1：bzip2 -d FileName.bz2
+
+　　解压2：bunzip2 FileName.bz2
+
+　　压缩： bzip2 -z FileName
+
+　　.tar.bz2
+
+　　解压：tar jxvf FileName.tar.bz2
+
+　　压缩：tar jcvf FileName.tar.bz2 DirName
+
+bz命令
+
+　　解压1：bzip2 -d FileName.bz
+
+　　解压2：bunzip2 FileName.bz
+
+　　压缩：未知
+
+　　.tar.bz
+
+　　解压：tar jxvf FileName.tar.bz
+
+Z命令
+
+　　解压：uncompress FileName.Z
+
+　　压缩：compress FileName
+
+　　.tar.Z
+
+　　解压：tar Zxvf FileName.tar.Z
+
+　　压缩：tar Zcvf FileName.tar.Z DirName
+
+zip命令
+
+　　解压：unzip FileName.zip
+
+　　压缩：zip FileName.zip DirName
+
+22、
+find \ +文件名（*号代替符）
+ldd + 文件名 （查看依赖库）
+
+23、
+watch -n 1 nvidia-smi -i 1 -q -d Utilization 实时更新查看信息
+-n 1s一次？	-i 选择哪个gpu	-q列出详细信息	
+
+24、
+环境配置需要zmq、kafka
+
+25、
+获取当前路径 $ PWD
+
+26、
+make clean 清理make环境（QT） 执行qt/gcc/bin下qmake来生成Makefile，然后make，来构建整个工程
+
+27、
+跨域拷贝 scp qtran2 soc@192.168.2.211:/home/soc/syn/qtran/
+
+28、
+查询文件唯一md5码	md5sum systemdispatcher
+
+29、
+history后!364

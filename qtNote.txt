@@ -1,0 +1,45 @@
+#QT 是一个框架，是库，相当于是别人盖好的毛坯房，只需要装修啥的就可以做出很漂亮的房子，哪怕不装修也能直接住只不过很寒碜；
+#java c++ 却是两种平行的语音，各有优劣（包括php等等）
+
+1、
+QTableWidget动态增加行的方法：首先rowCount()得到当前中的行数，然后在调用insertRow(row);
+
+2、
+在ui界面创建的控件，通过转到槽的方式生成的代码，再在ui界面删除时，需要把头文件和源文件里的slots都删除掉
+
+3、   
+			QJsonObject start_json；
+			QJsonDocument jsond;
+            jsond.setObject(start_json);
+            QString str = jsond.toJson();
+			
+4、QUUID（qt生成的uuid带大括号，使用时注意）
+0e0710c8-a8e1-40d4-99e0-dc936c83b843
+
+428fbc4e-2494-4a22-838c-099282c073db
+
+df8c32e7-1eb2-49a7-8464-34eb439e5195
+
+835f7394-d537-49e0-8206-004dfc33db72
+
+5、
+    ui->TableWidget->clear();
+    QStringList header;
+    header<<"cmd"<<"sub_server"<<"handle"<<"dev_id"<<"index";
+    ui->TableWidget->setHorizontalHeaderLabels(header);
+
+6、
+封c接口是为了不同编译环境下使用，string、QString等换一下版本就不能使用了
+
+7、
+qt利用windeployqt.exe来批量生成依赖库，封装程序（这个其实并不是很完美，他会把很多依赖文件都拿过来对于简单程序来说大多数都是没用的），其实自己应该清楚到底用到了哪些库
+一般在qt的bin目录下，在windeployqt所在目录下用windeployqt执行需要运行的程序
+	eg：C:\Qt\Qt5.5.1\5.5\msvc2013_64\bin\windeployqt.exe 
+
+8、以后要是碰到no such slot的问题
+1、看类声明中有没有Q_OBJECT
+2、看slot函数有没有声明
+3、查看slot有没有出现拼写错误
+
+9、所有的dll都是动态库，程序发布的时候需要放到与程序同目录下？或者放到PATH里能让程序找到，相对灵活，程序大小会比较小；但是静态库的话会改变编译方式，相当于提前把动态库的代码都预编译到执行程序中了，所以执行程序会非常大（ffmpeg）
+	发布相关：Deploying Qt Application;Qt for Windows-Deployment
